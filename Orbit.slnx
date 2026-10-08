@@ -1,0 +1,9 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Orbit.Web/Orbit.Web.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Orbit.IntegrationTests/Orbit.IntegrationTests.csproj" />
+    <Project Path="tests/Orbit.UnitTests/Orbit.UnitTests.csproj" />
+  </Folder>
+</Solution>

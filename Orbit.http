@@ -1,0 +1,19 @@
+@baseUrl = http://localhost:5080
+
+### Public mission-control page
+GET {{baseUrl}}/
+
+### Liveness
+GET {{baseUrl}}/healthz/live
+
+### Database readiness
+GET {{baseUrl}}/healthz/ready
+
+### Development OpenAPI
+GET {{baseUrl}}/openapi/v1.json
+
+### Returns 401 until real sign-in is configured
+GET {{baseUrl}}/api/organizations/aurora/projects
+
+### Returns 401 until real sign-in is configured
+GET {{baseUrl}}/api/organizations/aurora/projects/lunar-relay
