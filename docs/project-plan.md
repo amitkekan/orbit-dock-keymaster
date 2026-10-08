@@ -174,3 +174,62 @@ In a separate workspace rooted at the personal project folder, scaffold the .NET
 The solution, themed Razor landing page, SQLite model, resource-based membership checks, and protected read APIs are implemented. Unit and relational HTTP tests cover role-read rules, issuer/subject binding, cross-tenant access, ignored identity-provider role claims, next-request membership revocation, and owner foreign keys. Normal application authentication does not accept test identity headers.
 
 This is a partial foundation, not completion of all Phase 1 or Phase 2 requirements. Write authorization, migrations, concurrency, audit persistence, and real sign-in remain pending. The live identity-provider choice is still required before Phase 3.
+
+## Flight 002: work-machine demo and authenticated fleet dashboard
+
+### Preconditions and boundaries
+
+The work machine cannot reach public NuGet.org under its current network policy. The existing compiled demo can run without restore, but cannot validate new source changes or prove public-source provenance. No internal-feed fallback, corporate-cache reuse, alternate download route, or weakened TLS validation is authorized by this plan.
+
+Before coding, select an employer-authorized build path consistent with the public-only project policy. Examples are IT-approved public NuGet access or a personal build environment with explicitly authorized transfer of personal build artifacts back to the work machine. Neither is assumed to be permitted. A private GitHub repository is not a substitute for transfer approval.
+
+The identity-provider choice and personal directory app-registration permissions also remain unverified. Do not create registrations, grant consent, request credentials in chat, or bind real users to privileged memberships automatically.
+
+### Bounded implementation sequence
+
+1. Verify the authorized package/build path with a fresh restore, build, tests, and vulnerability audit. Keep all publishable configuration public-source-only.
+2. Review the dashboard design across architecture, authentication, tenant isolation, credential privacy, UI accessibility, and operational failure behavior. Record decisions before editing.
+3. Add an authenticated organization-list service and endpoint. Resolve memberships from application state by validated issuer and subject; return only the caller's organizations and their per-organization roles. Do not expose other members or global roles.
+4. Add a server-rendered fleet selector and read-only mission dashboard. Require authentication; recheck tenant scope server-side on each request. Use no browser impersonation or test-header login.
+5. Configure the selected OpenID Connect provider through official handlers, secure cookies, and local secrets. Validate settings and fail explicitly when misconfigured. Use HTTPS for the real browser authentication demonstration.
+6. Provision synthetic demo memberships only through an explicit local development setup after identity mapping is verified. Never derive Admin rights from an untrusted client field, email address, or arbitrary claim.
+7. Run focused authorization and HTTP tests, followed by a fresh read-only security/code review and live browser checks. Repair supported findings within the bounded task scope.
+
+Steps 3 and 4 may be implemented and tested using isolated test authentication before real-provider integration, but cannot be represented as a verified real-sign-in demo.
+
+### Acceptance criteria
+
+- Anonymous dashboard/API access does not reveal fleet or mission data.
+- A user with no membership gets a useful no-access page without automatic enrollment.
+- A user in two organizations sees distinct local roles and only authorized missions.
+- Switching fleet IDs cannot expand access, and removed membership takes effect on subsequent requests.
+- Sign-out is protected against request forgery, and any return URL is local.
+- Cookies and provider configuration are verified without recording secrets or raw claims.
+- Existing protected reads and normal-app rejection of test identity headers remain covered.
+- Missing package access, missing provider settings, and unverified deployment controls are reported as blockers, not passes.
+
+### Review and evidence
+
+Use one bounded design review before implementation and a separate read-only review of the completed change. Specialist security review is required for the authentication changes; avoid redundant agent reviews of the same evidence. Tests, browser checks, and explicit approval boundaries remain the decisive verification gates.
+
+Status: plan recorded; implementation is blocked on an authorized build path and identity-provider selection. No work-machine security or source policy has been changed.
+
+### Local-only offline alternative
+
+For work-machine use, implement a separate package-free simulator rather than replacing the
+SQLite application or changing package sources. Use installed .NET shared-framework APIs,
+immutable synthetic memberships, a read-only Razor dashboard, and a standalone executable
+policy-check suite. Bind only to 127.0.0.1:5081 and require Development plus an exact Host guard.
+Persona selection is explicitly simulation input, never authentication or an original-app bypass.
+
+Pre-implementation review covered dependency isolation, local role/ownership checks, listener
+configuration, DNS rebinding, accidental cookies, output encoding, and clear operating limits.
+Keep real sign-in, database mutations, and identity-provider verification deferred. This
+alternative demonstrates the policy matrix only; it does not complete the authenticated milestone.
+
+Offline alternative delivered and verified: source-free restore, zero-warning build,
+26 policy checks, 17 HTTP checks, browser persona/fleet navigation, rejection outside
+Development, and loopback confinement despite listener configuration overrides. Post-code
+security review reported no supported vulnerabilities within the simulator change scope.
+The verification server was stopped after testing. The original SQLite build and real
+identity-provider integration remain blocked/deferred, not reported as completed.

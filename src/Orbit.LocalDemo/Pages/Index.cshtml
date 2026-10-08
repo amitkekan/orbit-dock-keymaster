@@ -1,0 +1,94 @@
+@page
+@using Orbit.LocalDemo
+@inject Simulation Simulation
+@{
+    Layout = null;
+    var personaId = Request.Query["persona"].ToString();
+    var fleetId = Request.Query["fleet"].ToString();
+    var fleets = Simulation.GetFleets(personaId);
+    var selectedFleet = fleets.SingleOrDefault(fleet => fleet.Id == fleetId);
+    var missions = Simulation.GetMissions(personaId, fleetId);
+}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Orbit Dock Keymaster | Local Mission Simulator</title>
+    <link rel="stylesheet" href="/site.css" />
+</head>
+<body>
+<main>
+    <p class="eyebrow">ORBIT DOCK KEYMASTER / FLIGHT 002</p>
+    <h1>Mission simulator.</h1>
+    <aside><strong>Authorization simulation, not sign-in.</strong>
+        All personas and missions are synthetic and publicly selectable. This does not verify identity,
+        protect real data, or change the original application's authentication.</aside>
+    <p>Explore fleet-scoped roles and ownership decisions. Nothing is saved or modified.</p>
+    <form method="get">
+        <label for="persona">Synthetic persona</label>
+        <select id="persona" name="persona">
+            <option value="">Select a persona</option>
+            @foreach (var persona in Simulation.Personas)
+            {
+                <option value="@persona.Id" selected="@(persona.Id == personaId)">@persona.Name</option>
+            }
+        </select>
+        <button type="submit">Explore fleets</button>
+    </form>
+    @if (!string.IsNullOrEmpty(personaId))
+    {
+        <section aria-label="Available fleets">
+            <h2>Fleet clearances</h2>
+            @if (fleets.Count == 0)
+            {
+                <p>No fleet membership. Selection alone does not grant clearance.</p>
+            }
+            @foreach (var fleet in fleets)
+            {
+                <a class="fleet" href="/?persona=@Uri.EscapeDataString(personaId)&amp;fleet=@Uri.EscapeDataString(fleet.Id)">
+                    @fleet.Name <span>@fleet.Role</span>
+                </a>
+            }
+        </section>
+    }
+    @if (!string.IsNullOrEmpty(fleetId))
+    {
+        <section aria-label="Mission decisions">
+            @if (selectedFleet is null || missions is null)
+            {
+                <h2>Fleet unavailable</h2>
+                <p>The simulation denies this scope. No missions are disclosed.</p>
+            }
+            else
+            {
+                <h2>@selectedFleet.Name / @selectedFleet.Role</h2>
+                <div class="missions">
+                    @foreach (var mission in missions)
+                    {
+                        <article>
+                            <h3>@mission.Name</h3>
+                            <p>Synthetic owner: @mission.OwnerId</p>
+                            <p>Read: <strong>Allowed</strong></p>
+                            <p>Update/delete: <strong>@(mission.WouldAllowUpdateOrDelete ? "Would allow" : "Would deny")</strong></p>
+                        </article>
+                    }
+                </div>
+            }
+        </section>
+    }
+    <section>
+        <h2>Clearance rules</h2>
+        <ul>
+            <li>Viewer: read only, even for an owned mission.</li>
+            <li>Editor: read, with update/delete permission only for owned missions.</li>
+            <li>Admin: read and update/delete permission within that fleet only.</li>
+            <li>No membership: no read or modification permission.</li>
+        </ul>
+        <p>Alex is Admin in Aurora but Viewer in Nebula. Blair is Editor in Aurora.
+            Casey is Admin in Nebula. Visitor has no membership.</p>
+    </section>
+    <footer>Localhost only. No credentials, external services, cookies, persistence, or real login.</footer>
+</main>
+</body>
+</html>

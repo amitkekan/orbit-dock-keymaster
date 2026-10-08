@@ -8,6 +8,59 @@ The repository folder is `orbit-dock-keymaster`; existing solution and namespace
 
 ## Run locally
 
+### Offline work-machine simulator
+
+The separate package-free simulator builds with the installed .NET SDK and shared framework.
+It does not restore the SQLite application or download packages. No cloud subscription or identity provider is needed.
+
+From the repository root:
+
+```powershell
+dotnet restore tests\Orbit.LocalDemo.Checks\Orbit.LocalDemo.Checks.csproj --configfile src\Orbit.LocalDemo\nuget.config
+dotnet build tests\Orbit.LocalDemo.Checks\Orbit.LocalDemo.Checks.csproj --no-restore
+dotnet run --project tests\Orbit.LocalDemo.Checks --no-build --no-launch-profile
+$env:ASPNETCORE_ENVIRONMENT = 'Development'
+dotnet run --project src\Orbit.LocalDemo --no-build --no-launch-profile
+```
+
+Open **http://127.0.0.1:5081**, not `localhost`. The listener and Host guard deliberately accept
+only this address. Stop the foreground server with Ctrl+C. Startup fails outside Development;
+configuration cannot add other listening endpoints. Other local processes can access the simulator.
+
+With the simulator running, use a second terminal to check the live HTTP boundaries:
+
+```powershell
+dotnet run --project tests\Orbit.LocalDemo.Checks --no-build --no-launch-profile -- --http
+```
+
+Choose Alex, Blair, Casey, or Visitor to explore fleet membership and ownership decisions.
+Alex is Admin in Aurora but Viewer in Nebula; Blair is Editor in Aurora.
+Update/delete labels show policy decisions only, not implemented mutations.
+
+**This is a synthetic authorization simulation, not authentication.** Persona selection is
+publicly available to local callers. There are no credentials, cookies, real data, writes,
+database persistence, or external calls. The original application's protected APIs are unchanged.
+The package-free executable checks are separate from the existing MSTest suite.
+
+Read-only examples:
+
+```text
+GET http://127.0.0.1:5081/simulation/alex/fleets
+GET http://127.0.0.1:5081/simulation/blair/fleets/aurora/missions
+GET http://127.0.0.1:5081/simulation/blair/fleets/nebula/missions  (404)
+GET http://127.0.0.1:5081/healthz
+```
+
+Offline verification: source-free restore succeeded, build reported zero warnings/errors,
+26 deterministic policy checks and 17 localhost HTTP checks passed. Browser interaction
+verified persona selection, fleet navigation, Viewer denial, and the no-membership page.
+Production startup was rejected, and listener configuration overrides still produced only
+127.0.0.1:5081. A scoped read-only security review found no supported vulnerabilities in
+the simulator changes. These results do not validate real authentication or the original
+SQLite application's public-source build provenance.
+
+### Original SQLite application (requires public NuGet access)
+
 Install .NET SDK 10.0.401 or a compatible patch.
 
 ```powershell
